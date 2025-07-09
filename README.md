@@ -128,3 +128,55 @@ The initial phase focuses on building a robust **user service** as the foundatio
 > **Note:** Details on endpoints, usage, and deployment instructions will be included as the implementation progresses.
 
 > The codebase is evolving; as of now, the primary focus is on the backend user service. Additional microservices and the frontend will be introduced in subsequent phases.
+
+
+## Activity Service
+
+The `activity-service` is a dedicated Spring Boot microservice within the Smart Fitness Companion ecosystem, responsible for recording and retrieving user activity data with a focus on scalability, maintainability, and clean architecture.
+
+### Features Implemented
+
+- **MongoDB Integration**: Configured via `application.yml` for flexible, document-oriented storage of activity records.
+- **Activity Domain Model**:
+    - Comprehensive entity representing user activity, including type, duration, calories burned, timestamps, and extensible `additionalMetrics` (e.g., distance, speed, heart rate).
+- **DTO Layer**:
+    - `ActivityRequestDTO` and `ActivityResponseDTO` for decoupled, validated request and response handling.
+- **Repository**:
+    - Spring Data MongoDB interface for efficient, type-safe data access.
+- **Service Layer**:
+    - Interface-driven business logic and implementation to handle activity persistence and retrieval.
+- **REST Controller**:
+    - Exposes APIs for activity management.
+- **API Test Coverage**:
+    - HTTP request test files located in `api-requests/activity-service` for endpoint verification and documentation.
+
+### API Endpoints
+
+| Method | Endpoint                        | Description                                   | Notes                          |
+|--------|----------------------------------|-----------------------------------------------|--------------------------------|
+| POST   | `/api/activities`                | Track a new activity                          | Requires JSON body             |
+| GET    | `/api/activities`                | Retrieve all activities for a user            | Requires `X-User-Id` header    |
+| GET    | `/api/activities/{activityId}`   | Retrieve a specific activity by its ID        |                                |
+
+#### Tested Endpoints
+
+![img.png](activity-service/assets/img.png)
+![img_3.png](activity-service/assets/img_3.png)
+![img_4.png](activity-service/assets/img_4.png)
+![img_5.png](activity-service/assets/img_5.png)
+
+### Technical Summary
+
+- Built with Java and Spring Boot, following industry-standard microservice practices.
+- MongoDB chosen for its scalability and support for dynamic activity metrics.
+- Clearly separated layers (DTO, Repository, Service, Controller) for maintainability and extensibility.
+- All endpoints covered with HTTP request tests for reliability and easy onboarding.
+
+### How to Test
+
+- Sample HTTP requests can be found in `api-requests/activity-service`.
+- Ensure MongoDB is running and configured as specified in `application.yml`.
+
+---
+
+**Note:** The activity-service is fully integrated into the Smart Fitness Companion architecture and ready for production-level use and future feature expansions.
