@@ -2,6 +2,7 @@
 
 An **AI-powered fitness application** that delivers personalized workout recommendations, intelligent progress tracking, and secure user experiences—built using a modern microservices architecture.
 
+---
 
 ## Table of Contents
 - [Overview](#overview)
@@ -16,12 +17,20 @@ An **AI-powered fitness application** that delivers personalized workout recomme
   - [Configuration](#configuration)
   - [Running Locally](#running-locally)
   - [Current Progress](#current-progress)
+- [Activity Service](#activity-service)
+  - [Features Implemented](#features-implemented)
+  - [API Endpoints of Activity Service](#api-endpoints-of-activity-service)
+  - [Tested Endpoints](#tested-endpoints)
+  - [Technical Summary](#technical-summary)
+  - [How to Test](#how-to-test)
 
-
+---
 
 ## Overview
 
 Smart Fitness Companion leverages cutting-edge technologies and AI to transform the fitness journey for users. Designed with scalability, security, and personalization at its core, this platform aims to empower users to achieve their fitness goals through tailored workout plans, progress analytics, and seamless, secure access.
+
+---
 
 ## Key Features (Planned)
 
@@ -34,6 +43,8 @@ Smart Fitness Companion leverages cutting-edge technologies and AI to transform 
 - **Service Discovery & Gateway:** Eureka and Spring Cloud Gateway for dynamic routing and service registration.
 - **Web Interface:** Responsive frontend with React.
 
+---
+
 ## Technology Stack
 
 - **Frontend:** React (planned)
@@ -45,6 +56,8 @@ Smart Fitness Companion leverages cutting-edge technologies and AI to transform 
 - **Database:** PostgreSQL/MySQL
 - **AI/ML:** Gemini AI (planned integration)
 - **DevOps:** Docker, CI/CD pipelines (planned)
+
+---
 
 ## Microservice Architecture
 
@@ -84,13 +97,11 @@ Each feature domain (users, activity etc.) is implemented as a separate microser
 - **UserRequestDTO**: Used for user creation requests.
 - **UserResponseDTO**: Used for user responses.
 
----
 
 ### Configuration
 
 - Database connection settings are managed in `src/main/resources/application.yml`.
 
----
 
 ### Running Locally
 
@@ -113,7 +124,6 @@ Each feature domain (users, activity etc.) is implemented as a separate microser
 ![img_1.png](user-service/assets/img_1.png)
 ![img_2.png](user-service/assets/img_2.png)
 
----
 
 
 ### Current Progress
@@ -129,6 +139,7 @@ The initial phase focuses on building a robust **user service** as the foundatio
 
 > The codebase is evolving; as of now, the primary focus is on the backend user service. Additional microservices and the frontend will be introduced in subsequent phases.
 
+---
 
 ## Activity Service
 
@@ -150,7 +161,7 @@ The `activity-service` is a dedicated Spring Boot microservice within the Smart 
 - **API Test Coverage**:
     - HTTP request test files located in `api-requests/activity-service` for endpoint verification and documentation.
 
-### API Endpoints
+### API Endpoints of Activity Service
 
 | Method | Endpoint                        | Description                                   | Notes                          |
 |--------|----------------------------------|-----------------------------------------------|--------------------------------|
@@ -177,6 +188,6 @@ The `activity-service` is a dedicated Spring Boot microservice within the Smart 
 - Sample HTTP requests can be found in `api-requests/activity-service`.
 - Ensure MongoDB is running and configured as specified in `application.yml`.
 
----
-
 **Note:** The activity-service is fully integrated into the Smart Fitness Companion architecture and ready for production-level use and future feature expansions.
+
+---
