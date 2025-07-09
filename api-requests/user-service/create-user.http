@@ -1,0 +1,10 @@
+### CREATE A NEW USER ENTITY
+POST http://localhost:8080/api/users/register
+Content-Type: application/json
+
+{
+  "email": "prititest@gmail.com",
+  "password": "Priti@123",
+  "firstName": "Priti",
+  "lastName": "Test"
+}
