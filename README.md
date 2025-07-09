@@ -40,9 +40,9 @@ The initial phase focuses on building a robust **user service** as the foundatio
 - Data persistence with relational databases (PostgreSQL/MySQL)
 - Microservice-ready architecture using Spring Boot
 
-![img.png](img.png)
-![img_1.png](img_1.png)
-![img_2.png](img_2.png)
+![img.png](user-service/assets/img.png)
+![img_1.png](user-service/assets/img_1.png)
+![img_2.png](user-service/assets/img_2.png)
 
 > **Note:** Details on endpoints, usage, and deployment instructions will be included as the implementation progresses.
 
