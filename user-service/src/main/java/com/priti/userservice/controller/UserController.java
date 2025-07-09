@@ -1,7 +1,7 @@
 package com.priti.userservice.controller;
 
-import com.priti.userservice.dto.RegisterRequest;
-import com.priti.userservice.dto.UserResponse;
+import com.priti.userservice.dto.UserRequestDTO;
+import com.priti.userservice.dto.UserResponseDTO;
 import com.priti.userservice.service.UserService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -19,13 +19,13 @@ public class UserController {
 
 
     @GetMapping("/{userId}")
-    public ResponseEntity<UserResponse> getUserProfile(@PathVariable String userId) {
+    public ResponseEntity<UserResponseDTO> getUserProfile(@PathVariable String userId) {
         return ResponseEntity.ok(userService.getUserProfile(userId));
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserResponse> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
-        return ResponseEntity.ok(userService.register(registerRequest));
+    public ResponseEntity<UserResponseDTO> registerUser(@Valid @RequestBody UserRequestDTO userRequestDTO) {
+        return ResponseEntity.ok(userService.register(userRequestDTO));
     }
 
 }

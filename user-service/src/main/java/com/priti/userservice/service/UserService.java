@@ -1,14 +1,14 @@
 package com.priti.userservice.service;
 
-import com.priti.userservice.dto.RegisterRequest;
-import com.priti.userservice.dto.UserResponse;
+import com.priti.userservice.dto.UserRequestDTO;
+import com.priti.userservice.dto.UserResponseDTO;
 import com.priti.userservice.model.User;
 
 public interface UserService {
 
-    UserResponse getUserResponse(User user);
+    UserResponseDTO getUserResponse(User user);
     
-    UserResponse getUserProfile(String userId);
+    UserResponseDTO getUserProfile(String userId);
 
-    UserResponse register(RegisterRequest registerRequest);
+    UserResponseDTO register(UserRequestDTO userRequestDTO);
 }
