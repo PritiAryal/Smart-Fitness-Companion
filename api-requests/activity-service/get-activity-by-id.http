@@ -1,0 +1,3 @@
+### Get user activities by id
+GET http://localhost:8082/api/activities/686ee991eeaf40e74ba94fbb
+Accept: application/json
