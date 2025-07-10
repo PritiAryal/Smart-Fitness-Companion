@@ -1,6 +1,6 @@
 # Smart Fitness Companion
 
-An **AI-powered fitness application** that delivers personalized workout recommendations, intelligent progress tracking, and secure user experiences—built using a modern microservices architecture.
+An **AI-powered fitness application** that delivers personalized workout recommendations, intelligent progress tracking, and secure user experiences. Building it with a modern microservices architecture using React, Spring Boot, Eureka, Spring Cloud Gateway, Keycloak, RabbitMQ, PostgreSQL, and Gemini AI.
 
 ---
 
@@ -23,6 +23,13 @@ An **AI-powered fitness application** that delivers personalized workout recomme
   - [Tested Endpoints](#tested-endpoints)
   - [Technical Summary](#technical-summary)
   - [How to Test](#how-to-test)
+- [Registry Service (Eureka Server)](#registry-service-eureka-server)
+  - [Key Responsibilities](#key-responsibilities)
+  - [Implementation Details](#implementation-details)
+  - [Setup Instructions](#setup-instructions)
+  - [Service Registration](#service-registration)
+  - [Verification](#verification)
+  - [Why Service Discovery?](#why-service-discovery)
 
 ---
 
@@ -191,3 +198,62 @@ The `activity-service` is a dedicated Spring Boot microservice within the Smart 
 **Note:** The activity-service is fully integrated into the Smart Fitness Companion architecture and ready for production-level use and future feature expansions.
 
 ---
+
+## Registry Service (Eureka Server)
+
+The Registry Service provides centralized service discovery for the Smart Fitness Companion application using Netflix Eureka. It enables microservices to register themselves at runtime and discover each other without hard-coded network locations, supporting dynamic scaling and resilience.
+
+### Key Responsibilities
+
+- Maintains a registry of all running microservices in the system.
+- Enables client-side load balancing and fault tolerance.
+- Serves as the single source of truth for service locations within the architecture.
+
+### Implementation Details
+
+- **Framework:** Spring Boot, Spring Cloud Netflix Eureka Server
+- **Port:** 8761 (default)
+- **Configuration:**
+  ```yaml
+  server:
+    port: 8761
+  eureka:
+    client:
+      register-with-eureka: false
+      fetch-registry: false
+  ```
+- **Dependencies:**
+  - `spring-cloud-starter-netflix-eureka-server`
+
+### Setup Instructions
+
+1. Ensure Java 17+ and Maven are installed.
+2. Navigate to the `registry-service` directory.
+3. Build and start the service:
+   ```bash
+   ./mvnw spring-boot:run
+   ```
+4. Access the Eureka dashboard at [http://localhost:8761](http://localhost:8761) to monitor registered microservices.
+
+### Service Registration
+
+Other microservices (such as `user-service`, `activity-service`, etc.) connect as Eureka clients by including the `spring-cloud-starter-netflix-eureka-client` dependency and configuring their `application.yml`:
+```yaml
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+```
+
+### Verification
+
+After startup, all properly configured client services will appear in the Eureka dashboard, confirming successful dynamic registration and discovery.
+
+![img.png](registry-service/assets/img.png)
+
+### Why Service Discovery?
+
+Implementing a registry service using Eureka:
+- Eliminates hard-coded service URLs.
+- Enables robust scaling and failover strategies.
+- Simplifies inter-service communication for a true microservices architecture.
