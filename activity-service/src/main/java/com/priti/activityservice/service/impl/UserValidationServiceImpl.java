@@ -30,6 +30,4 @@ public class UserValidationServiceImpl implements UserValidationService {
         }
         return false;
     }
-
-
 }
