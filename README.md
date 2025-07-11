@@ -284,7 +284,6 @@ To ensure robust data integrity and domain consistency, the Smart Fitness Compan
 - **activity-service**: Handles user activity tracking and persists records only after verifying user validity.
 - **user-service**: Manages user data and exposes an endpoint for user existence validation.
 
----
 
 ### Components & Responsibilities
 
@@ -304,7 +303,6 @@ To ensure robust data integrity and domain consistency, the Smart Fitness Compan
 - **existByUserId() Service Method**  
   Encapsulates repository logic to efficiently check for user existence.
 
----
 
 ### Technology
 
@@ -323,7 +321,6 @@ To ensure robust data integrity and domain consistency, the Smart Fitness Compan
 - All services are registered with Eureka for automatic discovery.
 - The `@LoadBalanced` WebClient distributes requests to healthy instances of `user-service`, supporting high availability and scalability.
 
----
 
 ### API Contract
 
@@ -334,7 +331,6 @@ To ensure robust data integrity and domain consistency, the Smart Fitness Compan
 - **404 Not Found**: User does not exist
 - **400 Bad Request**: Malformed user ID (future-proofed for enhanced validation)
 
----
 
 ### Benefits & Rationale
 
