@@ -30,6 +30,13 @@ An **AI-powered fitness application** that delivers personalized workout recomme
   - [Service Registration](#service-registration)
   - [Verification](#verification)
   - [Why Service Discovery?](#why-service-discovery)
+- [Interservice Communication: User Validation](#interservice-communication-user-validation)
+  - [High Level Architecture](#high-level-architecture)
+  - [Components & Responsibilities](#components--responsibilities)
+  - [Technology](#technology)
+  - [Service Discovery & Load Balancing](#service-discovery--load-balancing)
+  - [API Contract](#api-contract)
+  - [Benefits & Rationale](#benefits--rationale)
 
 ---
 
@@ -257,3 +264,84 @@ Implementing a registry service using Eureka:
 - Eliminates hard-coded service URLs.
 - Enables robust scaling and failover strategies.
 - Simplifies inter-service communication for a true microservices architecture.
+
+___
+
+## Interservice Communication: User Validation
+
+To ensure robust data integrity and domain consistency, the Smart Fitness Companion platform implements interservice user validation between the `activity-service` and the `user-service`. This pattern enforces that all activity records are linked strictly to valid users, leveraging Spring Cloud technologies for seamless, scalable, and maintainable service interactions.
+
+### High Level Architecture
+
+```
+[activity-service] ────► [user-service]
+      |                          |
+      |── WebClient Call ───────►| GET /api/users/{userId}/validate
+      |                          |
+   Validates userId             Returns true/false
+```
+
+- **activity-service**: Handles user activity tracking and persists records only after verifying user validity.
+- **user-service**: Manages user data and exposes an endpoint for user existence validation.
+
+---
+
+### Components & Responsibilities
+
+#### activity-service
+
+- **UserValidationService**  
+  Handles outbound REST calls to `user-service` to confirm user existence before any activity is tracked.
+- **WebClientConfig**  
+  Provides a load-balanced, Eureka-aware `WebClient` bean for dynamic and resilient service resolution.
+- **Activity Flow Integration**  
+  The `trackActivity()` method invokes user validation before persisting activities to MongoDB, ensuring only valid user records are accepted.
+
+#### user-service
+
+- **GET /api/users/{userId}/validate**  
+  Exposes a REST API returning a boolean indicating if the user exists.
+- **existByUserId() Service Method**  
+  Encapsulates repository logic to efficiently check for user existence.
+
+---
+
+### Technology
+
+| Component         | Technology                        |
+|-------------------|-----------------------------------|
+| Communication     | Spring WebClient                  |
+| Service Discovery | Spring Cloud Netflix Eureka       |
+| Validation Logic  | RESTful endpoint (Boolean return) |
+| Routing           | Eureka-registered service name    |
+| Data Persistence  | MongoDB (activity-service)        |
+
+---
+
+### Service Discovery & Load Balancing
+
+- All services are registered with Eureka for automatic discovery.
+- The `@LoadBalanced` WebClient distributes requests to healthy instances of `user-service`, supporting high availability and scalability.
+
+---
+
+### API Contract
+
+**Endpoint:**  
+`GET http://USER-SERVICE/api/users/{userId}/validate`
+
+- **200 OK**: Returns `true` or `false` in the response body
+- **404 Not Found**: User does not exist
+- **400 Bad Request**: Malformed user ID (future-proofed for enhanced validation)
+
+---
+
+### Benefits & Rationale
+
+- **Data Integrity:** Prevents tracking activities for nonexistent or invalid users.
+- **Domain Separation:** Promotes clear service boundaries and reduces tight coupling between microservices.
+- **Scalability:** Supports horizontal scaling and future enhancements (e.g., authentication, retries, async fallback).
+- **Maintainability:** Centralizes integration logic, making the system easier to test and evolve.
+
+---
+
