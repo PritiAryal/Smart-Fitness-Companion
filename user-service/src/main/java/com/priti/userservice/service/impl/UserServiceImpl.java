@@ -6,10 +6,12 @@ import com.priti.userservice.model.User;
 import com.priti.userservice.repository.UserRepository;
 import com.priti.userservice.service.UserService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @AllArgsConstructor
 @Service
+@Slf4j
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -53,6 +55,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Boolean existByUserId(String userId) {
+        log.info("Calling user Validation API for userId: {}", userId);
         return userRepository.existsById(userId);
     }
 
