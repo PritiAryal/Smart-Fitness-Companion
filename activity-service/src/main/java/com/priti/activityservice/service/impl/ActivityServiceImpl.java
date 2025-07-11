@@ -5,6 +5,7 @@ import com.priti.activityservice.dto.ActivityResponseDTO;
 import com.priti.activityservice.model.Activity;
 import com.priti.activityservice.repository.ActivityRepository;
 import com.priti.activityservice.service.ActivityService;
+import com.priti.activityservice.service.UserValidationService;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,9 +18,14 @@ import java.util.stream.Collectors;
 public class ActivityServiceImpl implements ActivityService {
 
     private final ActivityRepository activityRepository;
+    private final UserValidationService userValidationService;
 
     @Override
     public ActivityResponseDTO trackActivity(ActivityRequestDTO activityRequest) {
+        boolean isValidUser = userValidationService.validateUser(activityRequest.getUserId());
+        if(!isValidUser){
+            throw new RuntimeException("Invalid User: " + activityRequest.getUserId());
+        }
         Activity activity = Activity.builder()
                 .userId(activityRequest.getUserId())
                 .type(activityRequest.getType())

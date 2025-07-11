@@ -1,0 +1,4 @@
+### GET REQUEST TO VALIDATE USER ID EXISTS OR NOT.
+
+GET http://localhost:8081/api/users/894dcfe7-9c28-43e7-881e-bc818fbc77a7/validate
+Content-Type: application/jsons

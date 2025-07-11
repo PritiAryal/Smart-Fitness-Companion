@@ -7,7 +7,7 @@ Content-Type: application/json
   "type": "WALKING",
   "duration": 30,
   "caloriesBurned": 300,
-  "startTime": "2025-06-01T08:00:00Z",
+  "startTime": "2025-08-01T08:00:00Z",
   "additionalMetrics": {
     "distance": 5.0,
     "averageSpeed": 10.0,

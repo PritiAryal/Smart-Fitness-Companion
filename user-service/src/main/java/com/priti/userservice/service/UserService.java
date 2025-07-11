@@ -11,4 +11,6 @@ public interface UserService {
     UserResponseDTO getUserProfile(String userId);
 
     UserResponseDTO register(UserRequestDTO userRequestDTO);
+
+    Boolean existByUserId(String userId);
 }
