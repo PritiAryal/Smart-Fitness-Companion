@@ -275,7 +275,6 @@ Implementing a registry service using Eureka:
 - Enables robust scaling and failover strategies.
 - Simplifies inter-service communication for a true microservices architecture.
 
-___
 
 ## Interservice Communication: User Validation
 
@@ -324,7 +323,7 @@ To ensure robust data integrity and domain consistency, the Smart Fitness Compan
 | Routing           | Eureka-registered service name    |
 | Data Persistence  | MongoDB (activity-service)        |
 
----
+
 
 ### Service Discovery & Load Balancing
 
