@@ -1,4 +1,4 @@
 ### Get user activities by userId header
 GET http://localhost:8082/api/activities
-X-User-Id: 2
+X-User-Id: 894dcfe7-9c28-43e7-881e-bc818fbc77a7
 Accept: application/json

@@ -45,8 +45,12 @@ An **AI-powered fitness application** that delivers personalized workout recomme
   - [Recommendation Service Architecture & Communication](#recommendation-service-architecture--communication)
   - [Event-Driven AI Recommendation Flow](#event-driven-ai-recommendation-flow)
   - [Gemini AI Integration](#gemini-ai-integration)
+  - [Verified Endpoints](#verified-endpoints)
+  - [Verified Database Entries](#verified-database-entries)
   - [How It All Works Together](#how-it-all-works-together)
   - [Key Highlights & Industry Best Practices](#key-highlights--industry-best-practices)
+- [Sequence Diagram](#sequence-diagram)
+
 
 ---
 
@@ -411,6 +415,10 @@ Verified message landed in `activity.queue` in RabbitMQ dashboard
 Confirmed real-time consumption of activity messages from queue
 
 
+![img.png](recommendation-ai-service/assets/img_C.png)
+![img.png](recommendation-ai-service/assets/img_B.png)
+
+
 
 ### Current Microservice Communication Flow
 
@@ -443,6 +451,8 @@ The `recommendation-ai-service` microservice is designed to deliver intelligent,
 #### Microservice Registration & Dependencies
 
 - **Service Registration:** Integrated as a Eureka client for service discovery and scalability.
+![img.png](recommendation-ai-service/assets/img_A.png)
+
 - **Dependencies:** Added support for Lombok (boilerplate reduction), MongoDB (NoSQL persistence), Spring Web, Spring WebFlux (for non-blocking Gemini API integration), and Spring Boot Starter AMQP (RabbitMQ support).
 
 #### REST API Endpoints
@@ -472,7 +482,7 @@ When a user logs a new activity:
 Refer to: [RabbitMQ Integration For Asynchronous Event Processing](#rabbitmq-integration-for-asynchronous-event-processing) for detailed implementation.
 
 
-**5. Asynchronous Processing and AI Generation**
+**3. Asynchronous Processing and AI Generation**
 
 - The `recommendation-ai-service` listens to the `activity.queue`.
 - Upon message receipt, the activity is analyzed using Google's Gemini AI. The prompt is programmatically crafted to elicit a structured, actionable response.
@@ -482,8 +492,14 @@ Refer to: [RabbitMQ Integration For Asynchronous Event Processing](#rabbitmq-int
 
 ### Gemini AI Integration
 
-- **Reactive Integration:** Uses Spring WebFlux for non-blocking calls to Gemini API.
-- **Dynamic Prompt Engineering:** Each activity is analyzed with a detailed custom prompt, ensuring the AI responds with rich, structured JSON data on performance, improvements, suggestions, and safety.
+#### Key Capabilities
+
+* **Reactive Integration:** Utilizes Spring WebFlux (`WebClient`) for efficient, non-blocking HTTP requests to the Gemini API.
+* **Dynamic Prompt Engineering:** Constructs tailored AI prompts based on activity type, duration, calories burned, and additional metrics.
+* **Structured AI Output Parsing:** Parses Gemini’s structured JSON response via Jackson, mapping it into domain-specific recommendation entities.
+* **Robust Error Handling:** Implements fallback logic to handle AI service failures or malformed responses gracefully.
+* **Persistent Storage:** Persists AI-generated recommendations in **MongoDB**, associating them with users and activities.
+
 
 #### Dependencies:
 
@@ -498,40 +514,117 @@ gemini:
     key: ${GEMINI_API_KEY}
 ```
 
-#### AI Service Implementation:
+#### Prompt Design & AI Response Format
 
-* Created `ActivityAIServiceImpl` to:
-
-  * Generate a detailed prompt using `Activity` object
-  * Call `GeminiService` to get AI-generated recommendations
-
-
-#### Prompt Design:
+The system generates a **precisely crafted prompt** directing Gemini to respond with JSON structured properly.
 
 Prompt includes:
 
 * Type, duration, calories, and additional metrics
 * Instructions to return in **structured JSON format** with:
 
-  * `analysis`
+  * `recommendation`
   * `improvements`
   * `suggestions`
   * `safety`
 
+[//]: # (```json)
+
+[//]: # ({)
+
+[//]: # (  "recommendation": {)
+
+[//]: # (    "overall": "...",)
+
+[//]: # (    "pace": "...",)
+
+[//]: # (    "heartRate": "...",)
+
+[//]: # (    "caloriesBurned": "...")
+
+[//]: # (  },)
+
+[//]: # (  "improvements": [)
+
+[//]: # (    { "area": "...", "recommendation": "..." })
+
+[//]: # (  ],)
+
+[//]: # (  "suggestions": [)
+
+[//]: # (    { "workout": "...", "description": "..." })
+
+[//]: # (  ],)
+
+[//]: # (  "safety": [ "...", "..." ])
+
+[//]: # (})
+
+[//]: # (```)
+
+This ensures AI outputs are consistent, parseable, and immediately actionable.
+
+#### AI Service Implementation
+
+Created `ActivityAIServiceImpl` to:
+
+* Builds a detailed prompt from the incoming `Activity` object.
+* Calls `GeminiService` to invoke the Gemini API.
+* Parses the structured AI response with Jackson’s `ObjectMapper`, extracting:
+
+  * Performance analysis
+  * Suggested improvements
+  * Workout suggestions
+  * Safety guidelines
+* Maps the extracted data into a `Recommendation` domain entity and saves it to MongoDB.
+* Includes fallback handling to generate default recommendations in case of invalid or missing AI data.
+
+
 #### GeminiServiceImpl:
 
-* Uses `WebClient` to POST structured prompt to Gemini API.
+**Gemini API Communication**
+* Uses `WebClient` to POST structured prompt to Gemini API and receive raw JSON responses.
 * Blocks on `.bodyToMono(String.class).block()` for now (sync call).
+* Encapsulates all external API communication. 
 * Handles outgoing requests and parses responses, abstracting all Gemini API logic.
+* Decouples AI API integration from business logic for maintainability and easier testing.
+
+#### Response Parsing & Fallbacks
+
+* Extracts AI data from nested JSON paths: `candidates[0].content.parts[0].text`.
+* Cleans and parses embedded JSON strings.
+* Validates presence of key nodes (`recommendation`, `improvements`, `suggestions`, `safety`).
+* Provides a default recommendation object when AI response is absent or malformed.
+
+![img_3.png](recommendation-ai-service/assets/img_H.png)
+
 
 #### Listener Enhancement:
 
-Modified `ActivityMessageListenerImpl` to:
+* The `ActivityMessageListenerImpl`:
+  * Listens asynchronously to activity events via `@RabbitListener`.
+  * Invokes AI recommendation generation on incoming activity messages `ActivityAIService.generateRecommendation(activity)`.
+  * Persists generated recommendations in MongoDB.
+  * Logs AI-generated JSON
+  * This fully decouples the activity tracking pipeline from AI enrichment, enhancing scalability and resilience.
 
-* Invoke `ActivityAIService.generateRecommendation(activity)`
-* Log AI-generated JSON
 
+### Verified Endpoints
 
+The following endpoints are tested and operational:
+
+* `GET /api/recommendations/user/{userId}` — Fetches all recommendations for a user.
+![img.png](recommendation-ai-service/assets/img_G.png)
+
+* `GET /api/recommendations/activity/{activityId}` — Retrieves the recommendation for a specific activity.
+![img_1.png](recommendation-ai-service/assets/img_F.png)
+
+### Verified Database Entries
+
+* Fitness Recommendations are automatically saved in MongoDB under the `recommendations` collection.
+![img_2.png](recommendation-ai-service/assets/img_I.png)
+
+  
 ### How It All Works Together
 
 1. **User logs activity** (e.g., running, cycling) via the API.
@@ -539,6 +632,7 @@ Modified `ActivityMessageListenerImpl` to:
 3. **Activity is published** to RabbitMQ for downstream processing.
 4. **Recommendation AI service consumes** the activity, generates a prompt, and calls Gemini API.
 5. **Structured recommendation** is logged and (in progress) saved to MongoDB for future retrieval via REST endpoints.
+
 
 ### Flow Summary:
 
@@ -555,7 +649,7 @@ Modified `ActivityMessageListenerImpl` to:
   ├─ Consumes event via @RabbitListener
   ├─ Builds structured AI prompt
   ├─ Calls Gemini API via WebClient
-  └─ Logs structured recommendation and (in progress) saves to MongoDB
+  └─ Logs structured recommendation and saves to MongoDB
 ```
 
 ![img_3.png](recommendation-ai-service/assets/img_3.png)
@@ -570,7 +664,63 @@ Modified `ActivityMessageListenerImpl` to:
 - **Modern AI Integration:** Real-time, context-aware recommendations using Google Gemini, with robust prompt engineering.
 - **Security, Reliability, and Extensibility:** Production-ready setup with durable queues, validation at all stages, and easily pluggable AI modules.
 
+**Summary:**
+This integration utilizes modern microservices pattern combining event-driven architecture, reactive AI calls, robust JSON parsing, and persistence — delivering a scalable, maintainable, and AI-enhanced fitness application.
 ---
+
+## Sequence Diagram 
+
+**In Progress:**
+
+```mermaid
+sequenceDiagram
+    participant UI as User Interface (Postman/HTTP Client)
+    participant Gateway as API Gateway (Spring Cloud Gateway)
+    participant ActivitySvc as activity-service
+    participant UserSvc as user-service
+    participant MQ as RabbitMQ (fitness.exchange)
+    participant AISvc as recommendation-ai-service
+    participant Gemini as Gemini AI API
+    participant Mongo as MongoDB
+
+    Note over UI: User initiates activity creation
+    UI->>Gateway: POST /api/activities
+    Gateway->>ActivitySvc: Forward Request with X-User-Id
+
+    Note over ActivitySvc: Validate user before persisting activity
+    ActivitySvc->>UserSvc: GET /api/users/{id}/validate
+    UserSvc-->>ActivitySvc: true/false (User valid?)
+
+    alt if valid
+        ActivitySvc->>Mongo: Save Activity
+        ActivitySvc->>MQ: Publish Activity to exchange (routing key: activity.tracking)
+    else invalid
+        ActivitySvc-->>UI: 400 Bad Request (Invalid user)
+    end
+
+    Note over MQ: Message queued in activity.queue
+
+    AISvc->>MQ: @RabbitListener receives Activity
+    MQ-->>AISvc: Delivers Activity payload
+
+    Note over AISvc: Generate prompt & call Gemini AI
+    AISvc->>AISvc: Build detailed structured prompt
+    AISvc->>Gemini: POST prompt (WebClient)
+    Gemini-->>AISvc: Structured JSON Response
+
+    AISvc->>AISvc: Parse Gemini response
+    AISvc->>Mongo: Save Recommendation (activityId, userId, suggestions, improvements)
+
+    UI->>AISvc: GET /api/recommendations/user/{userId}
+    AISvc->>Mongo: Query recommendations
+    Mongo-->>AISvc: Return user recommendations
+    AISvc-->>UI: JSON response
+
+    UI->>AISvc: GET /api/recommendations/activity/{activityId}
+    AISvc->>Mongo: Query by activityId
+    Mongo-->>AISvc: Return specific recommendation
+    AISvc-->>UI: JSON response
+```
 
 
 

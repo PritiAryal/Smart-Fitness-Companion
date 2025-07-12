@@ -1,6 +1,8 @@
 package com.priti.recommendationaiservice.service.impl;
 
 import com.priti.recommendationaiservice.model.Activity;
+import com.priti.recommendationaiservice.model.Recommendation;
+import com.priti.recommendationaiservice.repository.RecommendationRepository;
 import com.priti.recommendationaiservice.service.ActivityAIService;
 import com.priti.recommendationaiservice.service.ActivityMessageListener;
 import lombok.RequiredArgsConstructor;
@@ -15,10 +17,14 @@ import org.springframework.stereotype.Service;
 public class ActivityMessageListenerImpl implements ActivityMessageListener {
 
     private final ActivityAIService activityAIService;
+    private final RecommendationRepository recommendationRepository;
 
+    @Override
     @RabbitListener(queues = "${rabbitmq.queue.name}")
     public void processActivity(Activity activity) {
         log.info("Received activity for AI processing: {}", activity.getId());
-        log.info("Generated recommendation: {}", activityAIService.generateRecommendation(activity));
+//        log.info("Generated recommendation: {}", activityAIService.generateRecommendation(activity));
+        Recommendation recommendation = activityAIService.generateRecommendation(activity);
+        recommendationRepository.save(recommendation);
     }
 }
