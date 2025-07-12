@@ -438,7 +438,6 @@ Confirmed real-time consumption of activity messages from queue
 
 The `recommendation-ai-service` microservice is designed to deliver intelligent, real-time fitness recommendations by leveraging a modern event-driven architecture. This service seamlessly integrates with the rest of the Smart Fitness Companion ecosystem, using RabbitMQ for asynchronous event processing and Google's Gemini AI for advanced recommendation generation.
 
----
 
 ### Recommendation Service Architecture & Communication
 
@@ -473,22 +472,6 @@ When a user logs a new activity:
 
 Refer to: [RabbitMQ Integration For Asynchronous Event Processing](#rabbitmq-integration-for-asynchronous-event-processing) for detailed implementation.
 
-```plaintext
-+-------------------+       REST Call       +-----------------+
-|   activity-service| ─────────────────────▶|   user-service  |
-|                   |  (User Validation)    |                 |
-+-------------------+                       +-----------------+
-
-        |
-        | RabbitMQ Event (activity.tracking)
-        ▼
-+-------------------+       Message        +--------------------------+
-|   activity-service| ────────────────────▶| recommendation-ai-service|
-|                   |                      |  (RabbitListener)        |
-+-------------------+                      +--------------------------+
-```
-
----
 
 **5. Asynchronous Processing and AI Generation**
 
@@ -497,7 +480,6 @@ Refer to: [RabbitMQ Integration For Asynchronous Event Processing](#rabbitmq-int
 - The AI-generated recommendation is logged and (to-be-implemented) persisted for retrieval.
 
 
----
 
 ### Gemini AI Integration
 
@@ -550,7 +532,6 @@ Modified `ActivityMessageListenerImpl` to:
 * Invoke `ActivityAIService.generateRecommendation(activity)`
 * Log AI-generated JSON
 
----
 
 ### How It All Works Together
 
@@ -581,8 +562,6 @@ Modified `ActivityMessageListenerImpl` to:
 ![img_3.png](recommendation-ai-service/assets/img_3.png)
 ![img.png](recommendation-ai-service/assets/img.png)
 
-
----
 
 ### Key Highlights & Industry Best Practices
 
