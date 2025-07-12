@@ -37,6 +37,16 @@ An **AI-powered fitness application** that delivers personalized workout recomme
   - [Service Discovery & Load Balancing](#service-discovery--load-balancing)
   - [API Contract](#api-contract)
   - [Benefits & Rationale](#benefits--rationale)
+- [RabbitMQ Integration For Asynchronous Event Processing](#rabbitmq-integration-for-asynchronous-event-processing)
+  - [Activity Event Publishing](#activity-event-publishing)
+  - [RabbitMQ Consumption - Recommendation AI Service Listener](#rabbitmq-consumption---recommendation-ai-service-listener)
+  - [Current Microservice Communication Flow](#current-microservice-communication-flow)
+- [AI-Powered Smart Fitness Recommendations: Microservice Integration with RabbitMQ & Gemini API](#ai-powered-smart-fitness-recommendations-microservice-integration-with-rabbitmq--gemini-api)
+  - [Recommendation Service Architecture & Communication](#recommendation-service-architecture--communication)
+  - [Event-Driven AI Recommendation Flow](#event-driven-ai-recommendation-flow)
+  - [Gemini AI Integration](#gemini-ai-integration)
+  - [How It All Works Together](#how-it-all-works-together)
+  - [Key Highlights & Industry Best Practices](#key-highlights--industry-best-practices)
 
 ---
 
@@ -331,7 +341,6 @@ To ensure robust data integrity and domain consistency, the Smart Fitness Compan
 - **404 Not Found**: User does not exist
 - **400 Bad Request**: Malformed user ID (future-proofed for enhanced validation)
 
-
 ### Benefits & Rationale
 
 - **Data Integrity:** Prevents tracking activities for nonexistent or invalid users.
@@ -339,5 +348,252 @@ To ensure robust data integrity and domain consistency, the Smart Fitness Compan
 - **Scalability:** Supports horizontal scaling and future enhancements (e.g., authentication, retries, async fallback).
 - **Maintainability:** Centralizes integration logic, making the system easier to test and evolve.
 
+
 ---
+
+
+## RabbitMQ Integration For Asynchronous Event Processing
+
+**Activity Service** publishes new activity events to RabbitMQ (fitness.exchange, routing key activity.tracking) after user validation and persistence.
+**Recommendation AI Service** consumes events from the activity.queue, ensuring decoupled, resilient, and scalable processing.
+
+
+### Activity Event Publishing
+
+**Service Involved**: `activity-service`
+
+#### Dependencies and Config:
+
+* Added `spring-boot-starter-amqp` to `pom.xml`.
+* Set up `application.yml` with:
+
+  * `fitness.exchange`
+  * `activity.queue`
+  * `activity.tracking` routing key
+
+#### Configuration Class:
+
+* Declared `Queue`, `DirectExchange`, and `Binding`.
+* Enabled `Jackson2JsonMessageConverter` for automatic object <-> JSON mapping.
+
+#### Activity Publishing:
+
+* Modified `ActivityServiceImpl` to:
+
+  * Validate user via `user-service`
+  * Save activity to MongoDB
+  * Publish the activity object to the configured RabbitMQ exchange using `RabbitTemplate`
+
+* Created new exchange "fitness.exchange" inside RabbitMQ dashboard and then ran all services and http request file to create activity.
+
+Published message to `fitness.exchange` using `activity.tracking` routing key
+Verified message landed in `activity.queue` in RabbitMQ dashboard
+
+![img_2.png](activity-service/assets/img_2.png)
+
+![img_1.png](activity-service/assets/img_1.png)
+
+
+### RabbitMQ Consumption - Recommendation AI Service Listener
+
+**Service Involved**: `recommendation-ai-service`
+
+#### Config:
+
+* Copied RabbitMQ config (queue, exchange, routing key) into `application.yml`
+* Added same `RabbitMqConfig` class for bean setup
+
+#### Listener Setup:
+
+* Created `ActivityMessageListenerImpl` implementing `ActivityMessageListener`
+* Added method with `@RabbitListener(queues = "${rabbitmq.queue.name}")`
+* Successfully logs the received activity ID upon event receipt
+
+Confirmed real-time consumption of activity messages from queue
+
+
+
+### Current Microservice Communication Flow
+
+```plaintext
++-------------------+       REST Call       +-----------------+
+|   activity-service| ─────────────────────▶|   user-service  |
+|                   |  (User Validation)    |                 |
++-------------------+                       +-----------------+
+
+        |
+        | RabbitMQ Event (activity.tracking)
+        ▼
++-------------------+       Message        +--------------------------+
+|   activity-service| ────────────────────▶| recommendation-ai-service|
+|                   |                      |  (RabbitListener)        |
++-------------------+                      +--------------------------+
+```
+
+---
+
+
+## AI-Powered Smart Fitness Recommendations: Microservice Integration with RabbitMQ & Gemini API
+
+
+The `recommendation-ai-service` microservice is designed to deliver intelligent, real-time fitness recommendations by leveraging a modern event-driven architecture. This service seamlessly integrates with the rest of the Smart Fitness Companion ecosystem, using RabbitMQ for asynchronous event processing and Google's Gemini AI for advanced recommendation generation.
+
+---
+
+### Recommendation Service Architecture & Communication
+
+#### Microservice Registration & Dependencies
+
+- **Service Registration:** Integrated as a Eureka client for service discovery and scalability.
+- **Dependencies:** Added support for Lombok (boilerplate reduction), MongoDB (NoSQL persistence), Spring Web, Spring WebFlux (for non-blocking Gemini API integration), and Spring Boot Starter AMQP (RabbitMQ support).
+
+#### REST API Endpoints
+
+Recommendation retrieval is exposed through clean, well-documented REST endpoints:
+
+#### Data Model
+
+All recommendations will be persisted in MongoDB with a normalized schema, enabling future analytics:
+
+---
+
+### Event-Driven AI Recommendation Flow
+
+**1. Activity Creation & User Validation**
+
+When a user logs a new activity:
+- The `activity-service` validates the user.
+- The activity is persisted.
+- The activity object is published as a message to RabbitMQ (`fitness.exchange`, routing key: `activity.tracking`).
+
+**2. RabbitMQ Integration**
+
+**Activity Service** publishes new activity events to RabbitMQ (fitness.exchange, routing key activity.tracking) after user validation and persistence.
+**Recommendation AI Service** consumes events from the activity.queue, ensuring decoupled, resilient, and scalable processing.
+
+Refer to: [RabbitMQ Integration For Asynchronous Event Processing](#rabbitmq-integration-for-asynchronous-event-processing) for detailed implementation.
+
+```plaintext
++-------------------+       REST Call       +-----------------+
+|   activity-service| ─────────────────────▶|   user-service  |
+|                   |  (User Validation)    |                 |
++-------------------+                       +-----------------+
+
+        |
+        | RabbitMQ Event (activity.tracking)
+        ▼
++-------------------+       Message        +--------------------------+
+|   activity-service| ────────────────────▶| recommendation-ai-service|
+|                   |                      |  (RabbitListener)        |
++-------------------+                      +--------------------------+
+```
+
+---
+
+**5. Asynchronous Processing and AI Generation**
+
+- The `recommendation-ai-service` listens to the `activity.queue`.
+- Upon message receipt, the activity is analyzed using Google's Gemini AI. The prompt is programmatically crafted to elicit a structured, actionable response.
+- The AI-generated recommendation is logged and (to-be-implemented) persisted for retrieval.
+
+
+---
+
+### Gemini AI Integration
+
+- **Reactive Integration:** Uses Spring WebFlux for non-blocking calls to Gemini API.
+- **Dynamic Prompt Engineering:** Each activity is analyzed with a detailed custom prompt, ensuring the AI responds with rich, structured JSON data on performance, improvements, suggestions, and safety.
+
+#### Dependencies:
+
+* Added `spring-boot-starter-webflux` to make async HTTP calls to Gemini API.
+
+#### Config:
+
+```yaml
+gemini:
+  api:
+    url: ${GEMINI_API_URL}
+    key: ${GEMINI_API_KEY}
+```
+
+#### AI Service Implementation:
+
+* Created `ActivityAIServiceImpl` to:
+
+  * Generate a detailed prompt using `Activity` object
+  * Call `GeminiService` to get AI-generated recommendations
+
+
+#### Prompt Design:
+
+Prompt includes:
+
+* Type, duration, calories, and additional metrics
+* Instructions to return in **structured JSON format** with:
+
+  * `analysis`
+  * `improvements`
+  * `suggestions`
+  * `safety`
+
+#### GeminiServiceImpl:
+
+* Uses `WebClient` to POST structured prompt to Gemini API.
+* Blocks on `.bodyToMono(String.class).block()` for now (sync call).
+* Handles outgoing requests and parses responses, abstracting all Gemini API logic.
+
+#### Listener Enhancement:
+
+Modified `ActivityMessageListenerImpl` to:
+
+* Invoke `ActivityAIService.generateRecommendation(activity)`
+* Log AI-generated JSON
+
+---
+
+### How It All Works Together
+
+1. **User logs activity** (e.g., running, cycling) via the API.
+2. **User is validated** and activity is persisted.
+3. **Activity is published** to RabbitMQ for downstream processing.
+4. **Recommendation AI service consumes** the activity, generates a prompt, and calls Gemini API.
+5. **Structured recommendation** is logged and (in progress) saved to MongoDB for future retrieval via REST endpoints.
+
+### Flow Summary:
+
+```plaintext
+[activity-service]
+  ├─ Validates user via WebClient ➜ [user-service]
+  ├─ Creates activity
+  └─ Publishes activity to RabbitMQ
+
+[RabbitMQ]
+  └─ Delivers event to activity.queue
+
+[recommendation-ai-service]
+  ├─ Consumes event via @RabbitListener
+  ├─ Builds structured AI prompt
+  ├─ Calls Gemini API via WebClient
+  └─ Logs structured recommendation and (in progress) saves to MongoDB
+```
+
+![img_3.png](recommendation-ai-service/assets/img_3.png)
+![img.png](recommendation-ai-service/assets/img.png)
+
+
+---
+
+### Key Highlights & Industry Best Practices
+
+- **Separation of Concerns:** Each microservice handles a distinct responsibility (user validation, activity tracking, recommendation).
+- **Event-Driven Architecture:** Decoupling between activity tracking and recommendation processing improves scalability and resilience.
+- **Cloud-Native Patterns:** Eureka for service discovery, RabbitMQ for messaging, and MongoDB for flexible data storage.
+- **Modern AI Integration:** Real-time, context-aware recommendations using Google Gemini, with robust prompt engineering.
+- **Security, Reliability, and Extensibility:** Production-ready setup with durable queues, validation at all stages, and easily pluggable AI modules.
+
+---
+
+
+
 

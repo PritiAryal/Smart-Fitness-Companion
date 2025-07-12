@@ -1,0 +1,4 @@
+### GET REQUEST TO GET RECOMMENDATION FOR SPECIFIC ACTIVITY
+
+GET http://localhost:8083/api/recommendations/activity/6871d83e63ec679f8b0de66b
+Content-Type: application/json

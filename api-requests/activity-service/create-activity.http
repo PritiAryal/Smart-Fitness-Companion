@@ -4,10 +4,10 @@ Content-Type: application/json
 
 {
   "userId": "894dcfe7-9c28-43e7-881e-bc818fbc77a7",
-  "type": "WALKING",
-  "duration": 30,
-  "caloriesBurned": 300,
-  "startTime": "2025-08-01T08:00:00Z",
+  "type": "CYCLING",
+  "duration": 10,
+  "caloriesBurned": 250,
+  "startTime": "2025-09-01T08:00:00Z",
   "additionalMetrics": {
     "distance": 5.0,
     "averageSpeed": 10.0,

@@ -1,0 +1,4 @@
+### GET REQUEST TO GET RECOMMENDATIONS FOR SPECIFIC USER
+
+GET http://localhost:8083/api/recommendations/user/894dcfe7-9c28-43e7-881e-bc818fbc77a7
+Content-Type: application/json

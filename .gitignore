@@ -1,1 +1,3 @@
 activity-service/src/main/resources/application.yml
+recommendation-ai-service/src/main/resources/application.yml
+api-requests/recommendation-ai-service/gemini-api.http
