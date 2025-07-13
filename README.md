@@ -55,6 +55,13 @@ An **AI-powered fitness application** that delivers personalized workout recomme
   - [API Gateway Integration (Spring Cloud Gateway)](#api-gateway-integration-spring-cloud-gateway)
   - [Architecture Snapshot (Updated)](#architecture-snapshot-updated)
   - [Highlights](#highlights)
+- [OAuth2 & Keycloak Authentication Integration](#oauth2--keycloak-authentication-integration)
+  - [Why OAuth2 with Keycloak?](#why-oauth2-with-keycloak)
+  - [Key Infrastructure Overview](#key-infrastructure-overview)
+  - [Automatic Keycloak User Synchronization](#automatic-keycloak-user-synchronization)
+  - [Token Testing via Postman](#token-testing-via-postman)
+  - [Validated Scenarios](#validated-scenarios)
+  - [Resulting Architecture](#resulting-architecture)
 
 
 ---
