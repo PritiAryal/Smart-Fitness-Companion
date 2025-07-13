@@ -1,4 +1,5 @@
 ### GET REQUEST TO GET SPECIFIC USER USING ID
-
-GET http://localhost:8081/api/users/894dcfe7-9c28-43e7-881e-bc818fbc77a7
+#GET http://localhost:8080/api/users/894dcfe7-9c28-43e7-881e-bc818fbc77a7
+#API GATEWAY URL:
+GET http://localhost:8080/api/users/894dcfe7-9c28-43e7-881e-bc818fbc77a7
 Content-Type: application/json

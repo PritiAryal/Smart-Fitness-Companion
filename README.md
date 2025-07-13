@@ -50,6 +50,11 @@ An **AI-powered fitness application** that delivers personalized workout recomme
   - [How It All Works Together](#how-it-all-works-together)
   - [Key Highlights & Industry Best Practices](#key-highlights--industry-best-practices)
 - [Sequence Diagram](#sequence-diagram)
+- [Infrastructure Enhancements: Centralized Configuration & API Gateway](#infrastructure-enhancements-centralized-configuration--api-gateway)
+  - [Centralized Configuration Management (Spring Cloud Config Server)](#centralized-configuration-management-spring-cloud-config-server)
+  - [API Gateway Integration (Spring Cloud Gateway)](#api-gateway-integration-spring-cloud-gateway)
+  - [Architecture Snapshot (Updated)](#architecture-snapshot-updated)
+  - [Highlights](#highlights)
 
 
 ---
@@ -668,7 +673,8 @@ The following endpoints are tested and operational:
 This integration utilizes modern microservices pattern combining event-driven architecture, reactive AI calls, robust JSON parsing, and persistence — delivering a scalable, maintainable, and AI-enhanced fitness application.
 ---
 
-## Sequence Diagram 
+
+## Sequence Diagram
 
 **In Progress:**
 
@@ -721,6 +727,210 @@ sequenceDiagram
     Mongo-->>AISvc: Return specific recommendation
     AISvc-->>UI: JSON response
 ```
+
+
+```mermaid
+sequenceDiagram
+    participant UI as User Interface (Postman/HTTP Client)
+    participant Gateway as API Gateway (Spring Cloud Gateway)
+    participant ActivitySvc as activity-service
+    participant UserSvc as user-service
+    participant MQ as RabbitMQ (fitness.exchange)
+    participant AISvc as recommendation-ai-service
+    participant Gemini as Gemini AI API
+    participant Mongo as MongoDB
+
+    Note over UI: User initiates activity creation
+    UI->>Gateway: POST /api/activities
+    Gateway->>ActivitySvc: Forward request with X-User-Id
+
+    Note over ActivitySvc: Validate user before persisting activity
+    ActivitySvc->>UserSvc: GET /api/users/{id}/validate
+    UserSvc-->>ActivitySvc: true/false (User valid?)
+
+    alt if valid
+        ActivitySvc->>Mongo: Save Activity
+        ActivitySvc->>MQ: Publish Activity to exchange (routing key: activity.tracking)
+    else invalid
+        ActivitySvc-->>Gateway: 400 Bad Request (Invalid user)
+        Gateway-->>UI: Return error response
+    end
+
+    Note over MQ: Message queued in activity.queue
+
+    AISvc->>MQ: @RabbitListener receives Activity
+    MQ-->>AISvc: Delivers Activity payload
+
+    Note over AISvc: Generate prompt & call Gemini AI
+    AISvc->>AISvc: Build detailed structured prompt
+    AISvc->>Gemini: POST prompt (WebClient)
+    Gemini-->>AISvc: Structured JSON response
+
+    AISvc->>AISvc: Parse Gemini response
+    AISvc->>Mongo: Save Recommendation (activityId, userId, suggestions, improvements)
+
+    Note over UI: User requests recommendations
+    UI->>Gateway: GET /api/recommendations/user/{userId}
+    Gateway->>AISvc: Forward request
+    AISvc->>Mongo: Query recommendations
+    Mongo-->>AISvc: Return user recommendations
+    AISvc-->>Gateway: Response payload
+    Gateway-->>UI: Return JSON
+
+    UI->>Gateway: GET /api/recommendations/activity/{activityId}
+    Gateway->>AISvc: Forward request
+    AISvc->>Mongo: Query by activityId
+    Mongo-->>AISvc: Return specific recommendation
+    AISvc-->>Gateway: Response payload
+    Gateway-->>UI: Return JSON
+```
+
+---
+
+## Infrastructure Enhancements: Centralized Configuration & API Gateway
+
+To support **scalable microservices**, reduce duplication, and adhere to **separation of concerns**, introducing two critical infrastructure upgrades:
+
+1. **Centralized Configuration** via Spring Cloud Config Server
+2. **Intelligent API Gateway Routing** via Spring Cloud Gateway
+
+
+### Centralized Configuration Management (Spring Cloud Config Server)
+
+We replaced decentralized configuration files with a **centralized config server**, enabling all microservices to dynamically load their settings at runtime from a unified source.
+
+#### Module Created
+
+* **Module Name:** `config-service`
+* **Tech Stack:** Java 24, Spring Boot 3.5.3
+* **Dependency:** `spring-cloud-config-server`
+
+#### Configuration Process
+
+1. **Migrated all individual configs** (`application.yml` from:
+
+    * `user-service`
+    * `activity-service`
+    * `recommendation-ai-service`
+    * `api-gateway`
+      into a central config folder within config-service
+
+2. **Enabled Native File-Based Config Repo**
+   Updated `config-service`'s own `application.yml` to make it happen.
+
+
+3. **Enabled Config Server in Main App:**
+   Annotated main class with:
+
+   ```java
+   @EnableConfigServer
+   ```
+
+4. **Updated Config Clients** (`user-service`, `activity-service`, `recommendation-ai-service`, `api-gateway`) by:
+
+    * Adding `spring-cloud-starter-config` dependency.
+    * Removing hardcoded configs and connecting them to the centralized config server.
+    * Enabling dynamic config loading via the Spring Cloud Config Client dependency and URL-based import strategy.
+
+5. **Verification:**
+
+Verified each service’s configuration by hitting the config server endpoints.
+
+* Confirmed via endpoints like:
+
+    * `http://localhost:8888/activity-service/default`
+
+#### Benefits:
+
+* Centralized, version-controlled configuration management.
+* Environment profile support (`dev`, `prod`, `staging`).
+* Eliminates redundancy and improves maintainability.
+* Instant config updates without code changes (when externalized to Git in future).
+
+
+### API Gateway Integration (Spring Cloud Gateway)
+
+We implemented an **API Gateway** to serve as the unified entry point for all internal microservices. This streamlines external client communication and supports dynamic routing, monitoring, and future security layers.
+
+#### Module Created
+
+* **Module Name:** `api-gateway`
+* **Tech Stack:** Java 24, Spring Boot 3.5.3
+* **Dependencies:**
+
+    * `spring-cloud-starter-gateway`
+    * `spring-cloud-starter-netflix-eureka-client`
+
+#### Central Routing Configuration
+
+* Defined logical routes for all backend microservices (user-service, activity-service, recommendation-ai-service) with appropriate path patterns.
+* Registered the API Gateway with Eureka for automatic service discovery.
+* Externalized the gateway configuration to the config-service like all other services.
+
+
+> All microservices are discoverable via Eureka. Gateway routes use **service names** and **load-balanced URIs** (`lb://`) for resiliency.
+
+#### Verified Functionality:
+
+* Gateway successfully routes requests to internal services via:
+
+    * `http://localhost:8080/api/users/**`
+    * `http://localhost:8080/api/activities/**`
+    * `http://localhost:8080/api/recommendations/**`
+* All routes and services registered with Eureka and visible on dashboard.
+
+
+### Architecture Snapshot (Updated)
+
+```mermaid
+graph TD
+  subgraph Gateway Layer
+    AG[API Gateway]
+  end
+
+  subgraph Microservices
+    US[User Service]
+    AS[Activity Service]
+    RS[Recommendation AI Service]
+    CFG[Config Server]
+  end
+
+  subgraph Infra
+    RMQ[RabbitMQ]
+    GEM[Gemini API]
+    MONGO[MongoDB]
+    EUREKA[Eureka Server]
+  end
+
+  AG -->|/api/users/**| US
+  AG -->|/api/activities/**| AS
+  AG -->|/api/recommendations/**| RS
+
+  US --> CFG
+  AS --> CFG
+  RS --> CFG
+  AG --> CFG
+
+  US --> EUREKA
+  AS --> EUREKA
+  RS --> EUREKA
+  AG --> EUREKA
+
+  AS -->|Publishes Activity| RMQ
+  RS -->|Consumes Events| RMQ
+  RS -->|AI Prompt| GEM
+  RS -->|Saves Recommendation| MONGO
+```
+
+### Highlights
+
+* **Spring Cloud Config** for centralized and scalable configuration management.
+* **Spring Cloud Gateway** for unified ingress routing.
+* **Microservices + Eureka** architecture for service discovery and modularity.
+* **Fully environment-configurable**, dynamic and production-aligned infrastructure.
+
+
+---
 
 
 

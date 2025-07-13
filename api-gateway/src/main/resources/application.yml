@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: api-gateway
+  config:
+    import: optional:configserver:http://localhost:8888
+#  cloud:
+#    gateway:
+#      routes:
+#        - id: user-service
+#          uri: lb://user-service
+#          predicates:
+#            - Path=/api/users/**
+#        - id: recommendation-ai-service
+#          uri: lb://recommendation-ai-service
+#          predicates:
+#            - Path=/api/recommendations/**
+#        - id: activity-service
+#          uri: lb://activity-service
+#          predicates:
+#            - Path=/api/activities/**
+#
+#server:
+#  port: 8080
+#
+#eureka:
+#  instance:
+#    preferIpAddress: true
+#    hostname: localhost
+#  client:
+#    serviceUrl:
+#      defaultZone: http://localhost:8761/eureka/
+#
+#
