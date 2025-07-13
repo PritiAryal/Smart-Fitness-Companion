@@ -1,3 +1,45 @@
 activity-service/src/main/resources/application.yml
 recommendation-ai-service/src/main/resources/application.yml
 api-requests/recommendation-ai-service/gemini-api.http
+
+
+
+
+
+
+# Logs
+smart-fitness-companion-frontend/logs
+smart-fitness-companion-frontend/*.log
+smart-fitness-companion-frontend/npm-debug.log*
+smart-fitness-companion-frontend/yarn-debug.log*
+smart-fitness-companion-frontend/yarn-error.log*
+smart-fitness-companion-frontend/pnpm-debug.log*
+smart-fitness-companion-frontend/lerna-debug.log*
+
+smart-fitness-companion-frontend/node_modules
+smart-fitness-companion-frontend/dist
+smart-fitness-companion-frontend/dist-ssr
+smart-fitness-companion-frontend/*.local
+
+# Environment variables
+smart-fitness-companion-frontend/.env
+smart-fitness-companion-frontend/.env.local
+smart-fitness-companion-frontend/.env.development.local
+smart-fitness-companion-frontend/.env.test.local
+smart-fitness-companion-frontend/.env.production.local
+
+# Editor directories and files
+smart-fitness-companion-frontend/.vscode/*
+!smart-fitness-companion-frontend/.vscode/extensions.json
+!smart-fitness-companion-frontend/.vscode/settings.json
+!smart-fitness-companion-frontend/.vscode/tasks.json
+!smart-fitness-companion-frontend/.vscode/launch.json
+smart-fitness-companion-frontend/.vscode/settings.local.json
+smart-fitness-companion-frontend/.idea
+smart-fitness-companion-frontend/.DS_Store
+smart-fitness-companion-frontend/*.suo
+smart-fitness-companion-frontend/*.ntvs*
+smart-fitness-companion-frontend/*.njsproj
+smart-fitness-companion-frontend/*.sln
+smart-fitness-companion-frontend/*.sw?
+smart-fitness-companion-frontend/.gitignore
