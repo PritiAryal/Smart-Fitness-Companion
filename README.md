@@ -909,11 +909,14 @@ The Smart Fitness Companion now supports secure authentication and authorization
 
 ### Why OAuth2 with Keycloak?
 
-Centralized identity and access management
-Scalable and stateless token-based security
-Authorization Code Flow with PKCE for secure SPA support
-Microservices remain decoupled from authentication logic
-Supports SSO, token revocation, user federation
+Centralized identity provider with user federation capabilities.
+Secure login with support for access tokens, refresh tokens, and identity tokens.
+JWT-based token verification for stateless, scalable microservices.
+Gateway-level authentication enforcement for all routes.
+Automatic user provisioning in the user-service DB when a valid Keycloak user logs in.
+Authorization Code Flow with PKCE for secure SPA support.
+Microservices remain decoupled from authentication logic.
+Supports SSO, token revocation, user federation.
 
 ---
 
@@ -951,8 +954,8 @@ When an authenticated request comes through API Gateway:
 
 2. **User Validation**
 
-  * Gateway calls `GET /api/users/{keycloakId}/validate`
-  * If the user does **not exist** in DB (checked by `keycloakId`), then:
+  * Gateway calls `GET /api/users/{userId}/validate`
+  * * If the user does **not exist** in DB, then: user registration is triggered.
 
 3. **User Registration**
 
@@ -962,7 +965,7 @@ When an authenticated request comes through API Gateway:
 
 4. **Header Mutation**
 
-  * Adds `X-User-ID` to headers for downstream services
+  * Adds `X-User-ID` to headers or fallback to `sub` from JWT (Keycloak ID) for downstream services
 
 ---
 
@@ -989,42 +992,50 @@ sequenceDiagram
     Note over Gateway: Step 3 - Sync User with DB
     Gateway->>Gateway: Intercept in WebFilter
     Gateway->>Gateway: Decode JWT → Extract sub, email, name
+    alt X-User-ID header not present
+      Gateway->>Gateway: Use sub (Keycloak ID) as fallback userId
+    end
 
-    Gateway->>UserSvc: GET /api/users/{sub}/validate
-    alt User exists
+    Gateway->>UserSvc: GET /api/users/{userId}/validate
+    alt User exists (user.keycloakId = sub)
         UserSvc-->>Gateway: true
-        Gateway->>Gateway: Inject X-User-ID header
+        Gateway->>Gateway: Inject X-User-ID header (sub)
     else User doesn't exist
         UserSvc-->>Gateway: false
-        Gateway->>UserSvc: POST /api/users/register
-        UserSvc-->>Gateway: New user created
-        Gateway->>Gateway: Inject X-User-ID header
+        Gateway->>UserSvc: POST /api/users/register (with JWT claims)
+        UserSvc-->>Gateway: New user created with keycloakId=sub
+        Gateway->>Gateway: Inject X-User-ID header (sub)
     end
 
     Note over Gateway, Client: Step 4 - Forward to Downstream Services
     Gateway-->>Client: Response or forward to actual service
 ```
 
+This ensures that every authenticated Keycloak user has a matching user entry in the local `user-service` database.
+
 #### Extracted JWT Claims
 
-* `sub` → Keycloak ID (used as primary reference)
-* `email`, `given_name`, `family_name`
-* Dummy password is set on initial sync
+* `sub` → used as `keycloakId` and primary identity reference
+* `email`, `given_name`, `family_name` → used during initial registration
+* Dummy password is assigned during automatic sync
 
 #### Header Injection
 
-* Gateway adds `X-User-ID` to requests
-* Downstream services use this to identify current user
+* API Gateway injects `X-User-ID` header based on:
+
+  * `X-User-ID` from incoming request (if already present), or
+  * fallback to `sub` from JWT (Keycloak ID)
+* Downstream services (like activity-service) consume `X-User-ID` to identify the authenticated user
 
 
 ### Token Testing via Postman
 
-1. Use `oauth2-pkce-client` with `Authorization Code` + PKCE (S256)
+1. Use Client ID:`oauth2-pkce-client` with `Authorization Code` + PKCE (S256)
 2. Use Keycloak's discovery endpoint to get metadata and tokens
 3. Set:
 
-  * Auth URL
-  * Token URL
+  * Auth URL: from Keycloak realm's discovery document
+  * Token URL: from same source
 4. After login, copy **access token** and pass in `Authorization: Bearer <token>` header
 
 Test:
@@ -1040,8 +1051,9 @@ Test:
 ### Validated Scenarios
 
 * Authenticated users successfully access protected APIs
-* Unknown Keycloak users auto-registered in `user-service`
+* Unknown Keycloak users auto-registered in `user-service` using JWT claims
 * Duplicate calls skip re-registration
+* Gateway injects `X-User-ID` (Keycloak `sub`) header for downstream services
 * Requests without tokens receive `401 Unauthorized`
 
 
@@ -1049,8 +1061,9 @@ Test:
 
 * Unified token-based authentication across services
 * Identity centralized in Keycloak, decoupled from microservices
-* Stateless user sync ensures minimal duplication
+* Local user synchronization ensures each token maps to a DB entry
 * API Gateway acts as authentication and synchronization layer
+* Stateless, decoupled, secure, and scalable architecture
 
 ```mermaid
 flowchart TD
