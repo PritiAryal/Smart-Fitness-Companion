@@ -20,6 +20,7 @@ public class UserServiceImpl implements UserService {
     public UserResponseDTO getUserResponse(User user) {
         UserResponseDTO userResponse = new UserResponseDTO();
         userResponse.setId(user.getId());
+        userResponse.setKeycloakId(user.getKeycloakId());
         userResponse.setEmail(user.getEmail());
         userResponse.setFirstName(user.getFirstName());
         userResponse.setLastName(user.getLastName());
@@ -40,12 +41,14 @@ public class UserServiceImpl implements UserService {
     public UserResponseDTO register(UserRequestDTO userRequestDTO) {
 
         if(userRepository.existsByEmail(userRequestDTO.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            User existingUser = userRepository.findByEmail(userRequestDTO.getEmail());
+            return getUserResponse(existingUser);
         }
 
         User user = new User();
         user.setEmail(userRequestDTO.getEmail());
         user.setPassword(userRequestDTO.getPassword());
+        user.setKeycloakId(userRequestDTO.getKeycloakId());
         user.setFirstName(userRequestDTO.getFirstName());
         user.setLastName(userRequestDTO.getLastName());
 
@@ -56,7 +59,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public Boolean existByUserId(String userId) {
         log.info("Calling user Validation API for userId: {}", userId);
-        return userRepository.existsById(userId);
+        return userRepository.existsByKeycloakId(userId);
     }
-
 }

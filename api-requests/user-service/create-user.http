@@ -1,5 +1,6 @@
 ### CREATE A NEW USER ENTITY
 POST http://localhost:8081/api/users/register
+#Authorization: Bearer <paste your fresh token here>
 Content-Type: application/json
 
 {
@@ -8,3 +9,5 @@ Content-Type: application/json
   "firstName": "Priti",
   "lastName": "Test"
 }
+
+### Utilize Postman for generating a new token from Keycloak

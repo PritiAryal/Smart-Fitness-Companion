@@ -894,6 +894,169 @@ graph TD
 
 ---
 
+### OAuth2 & Keycloak Authentication Integration
+
+The Smart Fitness Companion now supports secure authentication and authorization using **Keycloak** with **OAuth2 Authorization Code Flow + PKCE**.
+
+---
+
+### Why OAuth2 with Keycloak?
+
+Centralized identity and access management
+Scalable and stateless token-based security
+Authorization Code Flow with PKCE for secure SPA support
+Microservices remain decoupled from authentication logic
+Supports SSO, token revocation, user federation
+
+---
+
+### Key Infrastructure Overview
+
+#### Keycloak Setup
+
+* **Containerized** using Docker image: `quay.io/keycloak/keycloak:26.3.1`
+* Realm: `fitness-oauth2`
+* Public client: `oauth2-pkce-client`
+
+  * Enabled `Authorization Code Flow`
+  * Enabled `PKCE` (S256)
+  * Configured Redirect URIs: `http://localhost:5173` (future frontend)
+
+#### API Gateway Security Configuration
+
+* Dependency: `spring-boot-starter-oauth2-resource-server`
+* JWKS URI fetched from:
+  `http://localhost:8181/realms/fitness-oauth2/.well-known/openid-configuration`
+* Security logic defined in `SecurityConfig.java`
+
+  * Enforces `.oauth2ResourceServer().jwt()`
+  * All routes protected; CSRF disabled
+
+
+### Automatic Keycloak User Synchronization
+
+When an authenticated request comes through API Gateway:
+
+1. **JWT Token Intercepted**
+
+  * A `KeycloakUserSyncFilter` reads the JWT token.
+  * Extracts claims: `sub` (Keycloak ID), `email`, `given_name`, `family_name`
+
+2. **User Validation**
+
+  * Gateway calls `GET /api/users/{keycloakId}/validate`
+  * If the user does **not exist** in DB (checked by `keycloakId`), then:
+
+3. **User Registration**
+
+  * Gateway calls `POST /api/users/register`
+  * Sends extracted details to create user
+  * Ensures local DB contains every Keycloak-authenticated user
+
+4. **Header Mutation**
+
+  * Adds `X-User-ID` to headers for downstream services
+
+---
+
+#### Keycloak to Local DB Sync
+
+Every authenticated request passes through the API Gateway's `KeycloakUserSyncFilter`:
+
+```mermaid
+sequenceDiagram
+    participant Client as Client (Postman/Frontend)
+    participant Gateway as API Gateway
+    participant UserSvc as user-service
+
+    Client->>Gateway: HTTP Request with Bearer JWT
+    Gateway->>Gateway: Intercepts request in WebFilter
+    Gateway->>Gateway: Decode JWT, extract claims (sub, email, names)
+    Gateway->>UserSvc: GET /api/users/{sub}/validate
+    alt User exists
+        UserSvc-->>Gateway: true
+        Gateway->>Gateway: Injects X-User-ID header
+    else User doesn't exist
+        UserSvc-->>Gateway: false
+        Gateway->>UserSvc: POST /api/users/register
+        UserSvc-->>Gateway: New User Created
+        Gateway->>Gateway: Injects X-User-ID header
+    end
+    Gateway->>Client: Forward request downstream
+```
+
+#### Extracted JWT Claims
+
+* `sub` → Keycloak ID (used as primary reference)
+* `email`, `given_name`, `family_name`
+* Dummy password is set on initial sync
+
+#### Header Injection
+
+* Gateway adds `X-User-ID` to requests
+* Downstream services use this to identify current user
+
+
+### Token Testing via Postman
+
+1. Use `oauth2-pkce-client` with `Authorization Code` + PKCE (S256)
+2. Use Keycloak's discovery endpoint to get metadata and tokens
+3. Set:
+
+  * Auth URL
+  * Token URL
+4. After login, copy **access token** and pass in `Authorization: Bearer <token>` header
+
+Test:
+
+* `GET /api/users/{userId}/validate`
+
+![img.png](api-gateway/assets/img_4.png)
+![img_1.png](api-gateway/assets/img_5.png)
+![img_2.png](api-gateway/assets/img_6.png)
+![img_3.png](api-gateway/assets/img_3.png)
+
+
+### Validated Scenarios
+
+* Authenticated users successfully access protected APIs
+* Unknown Keycloak users auto-registered in `user-service`
+* Duplicate calls skip re-registration
+* Requests without tokens receive `401 Unauthorized`
+
+
+### Resulting Architecture
+
+* Unified token-based authentication across services
+* Identity centralized in Keycloak, decoupled from microservices
+* Stateless user sync ensures minimal duplication
+* API Gateway acts as authentication and synchronization layer
+
+```mermaid
+flowchart TD
+    subgraph Client
+        A[Postman / SPA Frontend]
+    end
+    subgraph Auth
+        B[Keycloak Auth Server]
+    end
+    subgraph API Gateway
+        C[KeycloakUserSyncFilter]<-->D[Route + Security Filter]
+    end
+    subgraph Microservices
+        E[user-service]-->|X-User-ID|F[activity-service]
+        E-->|DB sync|DB[(User DB)]
+    end
+
+    A-->|Login|B
+    B-->|JWT Token|A
+    A-->|Bearer Token|C
+    C-->|X-User-ID|E
+    C-->|Forwarded request|F
+```
+
+---
+
 
 
 
