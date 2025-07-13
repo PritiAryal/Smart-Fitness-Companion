@@ -972,24 +972,37 @@ Every authenticated request passes through the API Gateway's `KeycloakUserSyncFi
 
 ```mermaid
 sequenceDiagram
-    participant Client as Client (Postman/Frontend)
+    participant Client as Client (Postman / Frontend)
+    participant Keycloak as Keycloak (Identity Provider)
     participant Gateway as API Gateway
     participant UserSvc as user-service
 
+    Note over Client, Keycloak: Step 1 - Authentication
+    Client->>Keycloak: OAuth2 Authorization Code Request (with PKCE)
+    Keycloak-->>Client: Redirect with Auth Code
+    Client->>Keycloak: Exchange code for Access Token
+    Keycloak-->>Client: JWT Access Token (with sub, email, etc.)
+
+    Note over Client, Gateway: Step 2 - Request with Token
     Client->>Gateway: HTTP Request with Bearer JWT
-    Gateway->>Gateway: Intercepts request in WebFilter
-    Gateway->>Gateway: Decode JWT, extract claims (sub, email, names)
+
+    Note over Gateway: Step 3 - Sync User with DB
+    Gateway->>Gateway: Intercept in WebFilter
+    Gateway->>Gateway: Decode JWT → Extract sub, email, name
+
     Gateway->>UserSvc: GET /api/users/{sub}/validate
     alt User exists
         UserSvc-->>Gateway: true
-        Gateway->>Gateway: Injects X-User-ID header
+        Gateway->>Gateway: Inject X-User-ID header
     else User doesn't exist
         UserSvc-->>Gateway: false
         Gateway->>UserSvc: POST /api/users/register
-        UserSvc-->>Gateway: New User Created
-        Gateway->>Gateway: Injects X-User-ID header
+        UserSvc-->>Gateway: New user created
+        Gateway->>Gateway: Inject X-User-ID header
     end
-    Gateway->>Client: Forward request downstream
+
+    Note over Gateway, Client: Step 4 - Forward to Downstream Services
+    Gateway-->>Client: Response or forward to actual service
 ```
 
 #### Extracted JWT Claims
@@ -1021,7 +1034,7 @@ Test:
 ![img.png](api-gateway/assets/img_4.png)
 ![img_1.png](api-gateway/assets/img_5.png)
 ![img_2.png](api-gateway/assets/img_6.png)
-![img_3.png](api-gateway/assets/img_3.png)
+![img.png](api-gateway/assets/img_7.png)
 
 
 ### Validated Scenarios
