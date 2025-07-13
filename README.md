@@ -691,57 +691,6 @@ sequenceDiagram
 
     Note over UI: User initiates activity creation
     UI->>Gateway: POST /api/activities
-    Gateway->>ActivitySvc: Forward Request with X-User-Id
-
-    Note over ActivitySvc: Validate user before persisting activity
-    ActivitySvc->>UserSvc: GET /api/users/{id}/validate
-    UserSvc-->>ActivitySvc: true/false (User valid?)
-
-    alt if valid
-        ActivitySvc->>Mongo: Save Activity
-        ActivitySvc->>MQ: Publish Activity to exchange (routing key: activity.tracking)
-    else invalid
-        ActivitySvc-->>UI: 400 Bad Request (Invalid user)
-    end
-
-    Note over MQ: Message queued in activity.queue
-
-    AISvc->>MQ: @RabbitListener receives Activity
-    MQ-->>AISvc: Delivers Activity payload
-
-    Note over AISvc: Generate prompt & call Gemini AI
-    AISvc->>AISvc: Build detailed structured prompt
-    AISvc->>Gemini: POST prompt (WebClient)
-    Gemini-->>AISvc: Structured JSON Response
-
-    AISvc->>AISvc: Parse Gemini response
-    AISvc->>Mongo: Save Recommendation (activityId, userId, suggestions, improvements)
-
-    UI->>AISvc: GET /api/recommendations/user/{userId}
-    AISvc->>Mongo: Query recommendations
-    Mongo-->>AISvc: Return user recommendations
-    AISvc-->>UI: JSON response
-
-    UI->>AISvc: GET /api/recommendations/activity/{activityId}
-    AISvc->>Mongo: Query by activityId
-    Mongo-->>AISvc: Return specific recommendation
-    AISvc-->>UI: JSON response
-```
-
-
-```mermaid
-sequenceDiagram
-    participant UI as User Interface (Postman/HTTP Client)
-    participant Gateway as API Gateway (Spring Cloud Gateway)
-    participant ActivitySvc as activity-service
-    participant UserSvc as user-service
-    participant MQ as RabbitMQ (fitness.exchange)
-    participant AISvc as recommendation-ai-service
-    participant Gemini as Gemini AI API
-    participant Mongo as MongoDB
-
-    Note over UI: User initiates activity creation
-    UI->>Gateway: POST /api/activities
     Gateway->>ActivitySvc: Forward request with X-User-Id
 
     Note over ActivitySvc: Validate user before persisting activity
@@ -834,11 +783,13 @@ We replaced decentralized configuration files with a **centralized config server
 
 5. **Verification:**
 
-Verified each service’s configuration by hitting the config server endpoints.
+Verified each service’s configuration by running all services and hitting the config server endpoints.
 
-* Confirmed via endpoints like:
+* Confirmed via running all services and also check endpoints like:
 
     * `http://localhost:8888/activity-service/default`
+
+    ![img.png](config-service/assets/img.png)
 
 #### Benefits:
 
@@ -875,8 +826,14 @@ We implemented an **API Gateway** to serve as the unified entry point for all in
 * Gateway successfully routes requests to internal services via:
 
     * `http://localhost:8080/api/users/**`
+![img_2.png](api-gateway/assets/img_2.png)
+
     * `http://localhost:8080/api/activities/**`
+![img_1.png](api-gateway/assets/img_1.png)
+
     * `http://localhost:8080/api/recommendations/**`
+![img.png](api-gateway/assets/img.png)
+
 * All routes and services registered with Eureka and visible on dashboard.
 
 
@@ -899,6 +856,7 @@ graph TD
     RMQ[RabbitMQ]
     GEM[Gemini API]
     MONGO[MongoDB]
+    POSTGRESQL[PostgreSQL]
     EUREKA[Eureka Server]
   end
 
@@ -920,6 +878,7 @@ graph TD
   RS -->|Consumes Events| RMQ
   RS -->|AI Prompt| GEM
   RS -->|Saves Recommendation| MONGO
+  US -->|User Data| POSTGRESQL
 ```
 
 ### Highlights
