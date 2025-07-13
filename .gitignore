@@ -32,8 +32,8 @@ smart-fitness-companion-frontend/.env.production.local
 smart-fitness-companion-frontend/.vscode/*
 !smart-fitness-companion-frontend/.vscode/extensions.json
 !smart-fitness-companion-frontend/.vscode/settings.json
-!smart-fitness-companion-frontend/.vscode/tasks.json
-!smart-fitness-companion-frontend/.vscode/launch.json
+smart-fitness-companion-frontend/.vscode/tasks.json
+smart-fitness-companion-frontend/.vscode/launch.json
 smart-fitness-companion-frontend/.vscode/settings.local.json
 smart-fitness-companion-frontend/.idea
 smart-fitness-companion-frontend/.DS_Store
