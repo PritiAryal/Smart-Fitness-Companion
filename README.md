@@ -1092,13 +1092,6 @@ flowchart TD
 ---
 
 ## Smart Fitness Companion Frontend
-
-[![React](https://img.shields.io/badge/React-19.1.0-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://reactjs.org/)
-[![Vite](https://img.shields.io/badge/Vite-7.0.4-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![Material-UI](https://img.shields.io/badge/Material--UI-7.2.0-007FFF?style=for-the-badge&logo=mui&logoColor=white)](https://mui.com/)
-[![Redux Toolkit](https://img.shields.io/badge/Redux%20Toolkit-2.8.2-764ABC?style=for-the-badge&logo=redux&logoColor=white)](https://redux-toolkit.js.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-ESLint-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-
 > A modern, responsive React application for tracking fitness activities with AI-powered insights and OAuth2 authentication. Built with enterprise-grade architecture and industry best practices.
 
 ### Project Overview
@@ -1476,6 +1469,26 @@ API Endpoints used in Dashboard (frontend)
 3. **View Activities**: Grid layout with activity cards
 4. **Activity Details**: Detailed view with AI insights
 5. **Recommendations**: AI-powered smart fitness suggestions
+
+### Demo Video
+
+<video width="100%" controls>
+  <source src="smart-fitness-companion-frontend/assets/video.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
+---
+
+### Screenshots
+
+![img.png](smart-fitness-companion-frontend/assets/img.png)
+![img_1.png](smart-fitness-companion-frontend/assets/img_1.png)
+![img_2.png](smart-fitness-companion-frontend/assets/img_2.png)
+![img.png](smart-fitness-companion-frontend/assets/img_11.png)
+![img_4.png](smart-fitness-companion-frontend/assets/img_4.png)
+![img_5.png](smart-fitness-companion-frontend/assets/img_5.png)
+![img_6.png](smart-fitness-companion-frontend/assets/img_6.png)
+![img_7.png](smart-fitness-companion-frontend/assets/img_7.png)
 
 
 
