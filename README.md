@@ -1472,22 +1472,40 @@ API Endpoints used in Dashboard (frontend)
 
 ### Demo Video
 
-<video src="smart-fitness-companion-frontend/assets/video.mp4" width="100%" controls>
-  <source  type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+[//]: # (<video src="smart-fitness-companion-frontend/assets/video.mp4" width="100%" controls>)
+
+[//]: # (  <source  type="video/mp4">)
+
+[//]: # (  Your browser does not support the video tag.)
+
+[//]: # (</video>)
+
+![GIF](smart-fitness-companion-frontend/assets/gif.gif)
+
+[//]: # (<video src="smart-fitness-companion-frontend/assets/video.mp4" width="100%" controls>)
+
+[//]: # (</video>)
 
 ---
-### Screenshots
 
-![img.png](smart-fitness-companion-frontend/assets/img.png)
-![img_1.png](smart-fitness-companion-frontend/assets/img_1.png)
-![img_2.png](smart-fitness-companion-frontend/assets/img_2.png)
-![img.png](smart-fitness-companion-frontend/assets/img_11.png)
-![img_4.png](smart-fitness-companion-frontend/assets/img_4.png)
-![img_5.png](smart-fitness-companion-frontend/assets/img_5.png)
-![img_6.png](smart-fitness-companion-frontend/assets/img_6.png)
-![img_7.png](smart-fitness-companion-frontend/assets/img_7.png)
+[//]: # (### Screenshots)
+
+[//]: # ()
+[//]: # (![img.png]&#40;smart-fitness-companion-frontend/assets/img.png&#41;)
+
+[//]: # (![img_1.png]&#40;smart-fitness-companion-frontend/assets/img_1.png&#41;)
+
+[//]: # (![img_2.png]&#40;smart-fitness-companion-frontend/assets/img_2.png&#41;)
+
+[//]: # (![img.png]&#40;smart-fitness-companion-frontend/assets/img_11.png&#41;)
+
+[//]: # (![img_4.png]&#40;smart-fitness-companion-frontend/assets/img_4.png&#41;)
+
+[//]: # (![img_5.png]&#40;smart-fitness-companion-frontend/assets/img_5.png&#41;)
+
+[//]: # (![img_6.png]&#40;smart-fitness-companion-frontend/assets/img_6.png&#41;)
+
+[//]: # (![img_7.png]&#40;smart-fitness-companion-frontend/assets/img_7.png&#41;)
 
 
 
