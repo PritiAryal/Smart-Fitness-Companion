@@ -1472,13 +1472,13 @@ API Endpoints used in Dashboard (frontend)
 
 ### Demo Video
 
-<video width="100%" controls>
-  <source src="smart-fitness-companion-frontend/assets/video.mp4" type="video/mp4">
+<video src="smart-fitness-companion-frontend/assets/video.mp4" width="100%" controls>
+  <source  type="video/mp4">
   Your browser does not support the video tag.
 </video>
 
 ---
-
+![Download Video](smart-fitness-companion-frontend/assets/video.mp4)
 ### Screenshots
 
 ![img.png](smart-fitness-companion-frontend/assets/img.png)
