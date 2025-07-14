@@ -1478,7 +1478,6 @@ API Endpoints used in Dashboard (frontend)
 </video>
 
 ---
-![Download Video](smart-fitness-companion-frontend/assets/video.mp4)
 ### Screenshots
 
 ![img.png](smart-fitness-companion-frontend/assets/img.png)
