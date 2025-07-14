@@ -62,6 +62,7 @@ An **AI-powered fitness application** that delivers personalized workout recomme
   - [Token Testing via Postman](#token-testing-via-postman)
   - [Validated Scenarios](#validated-scenarios)
   - [Resulting Architecture](#resulting-architecture)
+- [Smart Fitness Companion Frontend](#smart-fitness-companion-frontend)
 
 
 ---
@@ -72,7 +73,7 @@ Smart Fitness Companion leverages cutting-edge technologies and AI to transform 
 
 ---
 
-## Key Features (Planned)
+## Key Features
 
 - **Personalized Workouts:** AI-driven routines and recommendations using Gemini AI.
 - **Progress Tracking:** Intelligent analytics to monitor improvements and suggest next steps.
@@ -1089,6 +1090,397 @@ flowchart TD
 ```
 
 ---
+
+## Smart Fitness Companion Frontend
+
+[![React](https://img.shields.io/badge/React-19.1.0-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://reactjs.org/)
+[![Vite](https://img.shields.io/badge/Vite-7.0.4-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Material-UI](https://img.shields.io/badge/Material--UI-7.2.0-007FFF?style=for-the-badge&logo=mui&logoColor=white)](https://mui.com/)
+[![Redux Toolkit](https://img.shields.io/badge/Redux%20Toolkit-2.8.2-764ABC?style=for-the-badge&logo=redux&logoColor=white)](https://redux-toolkit.js.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-ESLint-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+
+> A modern, responsive React application for tracking fitness activities with AI-powered insights and OAuth2 authentication. Built with enterprise-grade architecture and industry best practices.
+
+### Project Overview
+
+The Smart Fitness Companion Frontend is a sophisticated React-based web application designed to provide users with an intuitive platform for tracking fitness activities and receiving AI-powered recommendations. This enterprise-grade application demonstrates modern frontend development practices, scalable architecture, and professional UI/UX design.
+
+```mermaid
+flowchart TD
+    A[User visits / Main Page] --> B{Is token present?}
+
+    B -- No --> C[Show Login with Keycloak button]
+    C --> D[User clicks Login]
+    D --> E[Redirect to Keycloak OAuth2 PKCE]
+
+    E --> F[User logs in on Keycloak]
+    F --> G[Redirect back with token & code verifier]
+
+    G --> H[Token and user info saved Redux + localStorage]
+    H --> I[Redirect to /activities Dashboard]
+
+    B -- Yes --> I
+
+    I --> J[ActivityForm - Add New Activity]
+    I --> K[ActivityList - List User Activities]
+    K --> L[Click on Activity Card]
+    L --> M[Go to /activities/:id]
+    M --> N[Fetch Activity + AI Recommendation]
+    N --> O[Show Analysis, Suggestions, Improvements, Safety]
+
+    I --> P[Click Logout Button]
+    P --> Q[Clear token + user info from storage]
+    Q --> R[Redirect to / Main Page]
+
+    %% Axios Interceptor Flow
+    subgraph Axios Interceptor
+        S[Before any API call] --> T{Token present?}
+        T -- Yes --> U[Add Authorization: Bearer <token>]
+        T -- Yes --> V[Add X-User-ID from localStorage]
+        U & V --> W[Send Request]
+        T -- No --> X[Reject or receive 401]
+    end
+```
+
+
+### Core Objectives
+
+- **User Experience**: Provide a seamless, modern interface for fitness tracking
+- **Performance**: Optimize for speed and responsiveness across devices
+- **Security**: Implement robust OAuth2 authentication with Keycloak
+- **Scalability**: Design for future feature expansion and maintenance
+
+### Key Features
+
+#### Authentication & Security
+
+- **OAuth2 + PKCE**: Secure authentication flow with Keycloak integration
+- **Token Management**: Automatic token refresh and secure storage
+- **Protected Routes**: Role-based access control for sensitive areas
+- **Session Management**: Persistent login state with secure logout
+
+#### Activity Management
+
+- **Activity Tracking**: Comprehensive logging of fitness activities
+- **Real-time Updates**: Live activity feed with instant synchronization
+- **Activity Categories**: Support for multiple fitness activity types
+- **Data Visualization**: Interactive charts and progress indicators
+
+#### AI Integration
+
+- **Smart Recommendations**: AI-powered fitness suggestions
+- **Progress Analysis**: Intelligent insights based on activity patterns
+- **Goal Setting**: Automated goal recommendations and tracking
+
+#### Modern UI/UX
+
+- **Responsive Design**: Mobile-first approach with breakpoint optimization
+- **Glassmorphism Effects**: Modern visual design with backdrop blur
+- **Smooth Animations**: Framer Motion integration for fluid interactions
+- **Dark/Light Themes**: Adaptive theming system
+- **Accessibility**: ARIA compliant with keyboard navigation support
+
+### System Architecture
+
+```mermaid
+graph TB
+    A[User Browser] --> B[React Frontend]
+    B --> C[Authentication Layer]
+    B --> D[State Management - Redux]
+    B --> E[Component Layer]
+
+    C --> F[Keycloak OAuth2]
+    D --> G[Auth Slice]
+
+    E --> I[ActivityForm Component]
+    E --> J[ActivityList Component]
+    E --> K[ActivityDetail Component]
+
+    B --> L[API Service Layer]
+    L --> M[Activity Service]
+    L --> N[Recommendation Service]
+
+    M --> O[Backend API :8080]
+    N --> O
+
+    style A fill:#e1f5fe
+    style B fill:#f3e5f5
+    style F fill:#fff3e0
+    style O fill:#e8f5e8
+```
+
+#### Architecture Principles
+
+- **Separation of Concerns**: Clear boundaries between presentation, business logic, and data
+- **Component Composition**: Reusable, composable React components
+- **Unidirectional Data Flow**: Predictable state management with Redux
+- **Service Layer Abstraction**: Clean API integration with axios interceptors
+
+### Technology Stack
+
+#### Core Framework
+
+| Technology     | Version | Purpose                                            |
+| -------------- | ------- | -------------------------------------------------- |
+| **React**      | 19.1.0  | UI Library - Component-based architecture          |
+| **Vite**       | 7.0.4   | Build Tool - Fast development and optimized builds |
+| **JS** | -  | Enhanced development experience      |
+
+#### UI Framework & Styling
+
+| Technology       | Version | Purpose                                          |
+| ---------------- | ------- | ------------------------------------------------ |
+| **Material-UI**  | 7.2.0   | Component Library - Google's Material Design     |
+| **Emotion**      | 11.14.0 | CSS-in-JS - Styled components with theme support |
+| **Tailwind CSS** | 3.4.17  | Utility Framework - Rapid UI development         |
+
+#### State Management & Routing
+
+| Technology        | Version | Purpose                                        |
+| ----------------- | ------- | ---------------------------------------------- |
+| **Redux Toolkit** | 2.8.2   | State Management - Predictable state container |
+| **React Redux**   | 9.2.0   | React Integration - Connect React to Redux     |
+| **React Router**  | 7.6.3   | Client-side Routing - SPA navigation           |
+
+#### Authentication & HTTP
+
+| Technology                 | Version | Purpose                                           |
+| -------------------------- | ------- | ------------------------------------------------- |
+| **react-oauth2-code-pkce** | 1.23.1  | OAuth2 Authentication - Secure login flow         |
+| **Axios**                  | 1.10.0  | HTTP Client - API communication with interceptors |
+
+
+### Quick Start
+
+#### Prerequisites
+
+- **Node.js**: Version 18.x or higher
+- **npm**: Version 8.x or higher
+- **Keycloak Server**: Running OAuth2 server
+- **Backend API**: Smart Fitness Companion backend service
+
+#### Installation Steps
+
+1. **Clone the Repository**
+
+   ```bash
+   git clone <repository-url>
+   cd smart-fitness-companion-frontend
+   ```
+
+2. **Install Dependencies**
+
+   ```bash
+   npm install
+   ```
+
+3. **Environment Configuration**
+
+   ```bash
+   # Create environment file
+   cp .env.example .env.local
+
+   # Configure environment variables
+   nano .env.local
+   ```
+
+4. **Start Development Server**
+
+   ```bash
+   npm run dev
+   ```
+
+5. **Access Application**
+  - Open browser to `http://localhost:5173`
+
+
+
+### Component Architecture
+
+```mermaid
+graph TD
+    A[App.jsx] --> B[NavigationBar]
+    A --> C[LoginPage]
+    A --> D[ActivityPage]
+    A --> E[ActivityDetail]
+
+    D --> F[ActivityForm]
+    D --> G[ActivityList]
+
+    F --> H[Activity Type Cards]
+    F --> I[Form Controls]
+
+    G --> J[Activity Cards]
+    G --> K[Loading Skeletons]
+
+    E --> L[Activity Stats]
+    E --> M[AI Recommendations]
+
+```
+
+#### Component Hierarchy
+
+#### App Component (`App.jsx`)
+
+- **Purpose**: Root component with routing and authentication logic
+- **Key Features**:
+  - OAuth2 authentication integration
+  - Route protection and navigation
+  - Global state initialization
+  - Responsive navigation bar
+  - Modern glassmorphism login page
+
+#### ActivityPage Component
+
+- **Purpose**: Main dashboard combining form and list components
+- **Features**:
+  - Gradient background with fade animations
+  - Responsive container layout
+  - Component composition pattern
+
+#### ActivityForm Component (`ActivityForm.jsx`)
+
+- **Purpose**: Form for creating new fitness activities
+- **Features**:
+  - Material-UI form controls with validation
+  - Dynamic activity type selection with icons
+  - Glassmorphism card design
+  - Real-time form state management
+  - Error handling and loading states
+
+#### ActivityList Component (`ActivityList.jsx`)
+
+- **Purpose**: Grid display of user activities
+- **Features**:
+  - Responsive 3-column grid layout
+  - Modern card design with hover effects
+  - Activity-specific icons and colors
+  - Navigation to detail views
+  - Loading skeleton states
+
+#### ActivityDetail Component (`ActivityDetail.jsx`)
+
+- **Purpose**: Detailed view of activity with AI recommendations
+- **Features**:
+  - Comprehensive activity statistics
+  - AI-powered recommendations
+  - Gradient backgrounds
+  - Dynamic icon mapping
+  - Dual API integration
+
+
+### Authentication Flow
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant F as Frontend
+    participant K as Keycloak
+    participant B as Backend API
+
+    U->>F: Access Application
+    F->>F: Check Token in Storage
+    alt No Valid Token
+        F->>U: Show Login Page
+        U->>F: Click Login
+        F->>K: Redirect to Auth Endpoint
+        K->>U: Show Login Form
+        U->>K: Enter Credentials
+        K->>F: Redirect with Auth Code
+        F->>K: Exchange Code for Tokens
+        K->>F: Return Access & Refresh Tokens
+        F->>F: Store Tokens
+    end
+    F->>B: API Calls with Bearer Token
+    B->>F: Protected Resources
+
+    note over F,K: Auto Refresh on Token Expiry
+```
+
+### Authentication Implementation
+
+#### OAuth2 + PKCE Flow
+
+1. **Authorization Request**: User initiates login
+2. **PKCE Challenge**: Generate code verifier and challenge
+3. **Authorization Grant**: Keycloak validates and returns code
+4. **Token Exchange**: Exchange authorization code for tokens
+5. **Token Storage**: Secure storage of access/refresh tokens
+6. **API Authentication**: Bearer token in request headers
+7. **Token Refresh**: Automatic renewal before expiry
+
+#### Security Features
+
+- **PKCE Extension**: Protection against authorization code interception
+- **Secure Storage**: Tokens stored in httpOnly cookies (production)
+- **Automatic Refresh**: Background token renewal
+- **Logout Handling**: Complete session cleanup
+
+
+### State Management
+
+```mermaid
+graph TB
+    A[Redux Store] --> B[Auth Slice]
+    A --> C[Activity Slice - Future]
+
+    B --> D[User Token]
+    B --> E[User Profile]
+    B --> F[Auth Status]
+
+    G[Components] --> H[useSelector]
+    G --> I[useDispatch]
+
+    H --> A
+    I --> J[Actions]
+    J --> K[Reducers]
+    K --> A
+
+    style A fill:#764ba2
+    style B fill:#667eea
+```
+
+### State Management Patterns
+
+- **Normalized State Shape**: Flat state structure for efficiency
+- **Immutable Updates**: Redux Toolkit's Inner integration
+- **Action Creators**: Consistent action patterns
+- **Selector Functions**: Memoized state selectors
+
+### API Integration
+
+API Endpoints used in Dashboard (frontend)
+
+| Method | Endpoint                         | Purpose                | Authentication |
+| ------ | -------------------------------- | ---------------------- | -------------- |
+| GET    | `/activities`                    | Fetch user activities  | Required       |
+| POST   | `/activities`                    | Create new activity    | Required       |
+| GET    | `/activities/{id}`               | Get specific activity  | Required       |
+| GET    | `/recommendations/activity/{id}` | Get AI recommendations | Required       |
+
+
+### User Journey Mapping
+
+#### Authentication Journey
+
+1. **Landing**: User visits application
+2. **Auth Check**: System validates existing session
+3. **Login Flow**: OAuth2 redirect to Keycloak
+4. **Token Exchange**: Secure token retrieval
+5. **Dashboard Access**: Authenticated user experience
+
+#### Activity Management Journey
+
+1. **Dashboard View**: User sees activity overview
+2. **Create Activity**: Form submission with validation
+3. **View Activities**: Grid layout with activity cards
+4. **Activity Details**: Detailed view with AI insights
+5. **Recommendations**: AI-powered smart fitness suggestions
+
+
+
+
+
 
 
 

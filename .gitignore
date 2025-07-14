@@ -43,3 +43,4 @@ smart-fitness-companion-frontend/*.njsproj
 smart-fitness-companion-frontend/*.sln
 smart-fitness-companion-frontend/*.sw?
 smart-fitness-companion-frontend/.gitignore
+smart-fitness-companion-frontend/.README.md
