@@ -88,15 +88,14 @@ Smart Fitness Companion leverages cutting-edge technologies and AI to transform 
 
 ## Technology Stack
 
-- **Frontend:** React (planned)
+- **Frontend:** React
 - **Backend:** Spring Boot Microservices
 - **Service Discovery:** Eureka
 - **API Gateway:** Spring Cloud Gateway
 - **Authentication & Authorization:** Keycloak
 - **Messaging:** RabbitMQ
 - **Database:** PostgreSQL/MySQL
-- **AI/ML:** Gemini AI (planned integration)
-- **DevOps:** Docker, CI/CD pipelines (planned)
+- **AI/ML:** Gemini AI
 
 ---
 
