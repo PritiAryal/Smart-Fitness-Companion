@@ -2,6 +2,7 @@
 
 An **AI-powered fitness application** that delivers personalized workout recommendations, intelligent progress tracking, and secure user experiences. Building it with a modern microservices architecture using React, Spring Boot, Eureka, Spring Cloud Gateway, Keycloak, RabbitMQ, PostgreSQL, and Gemini AI.
 
+## Architecture Overview: [View Architecture Overview](https://pritiaryal.github.io/SmartFitnessCompanionArchitectureDiagram/)
 ---
 
 ## Table of Contents
